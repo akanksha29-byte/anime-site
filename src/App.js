@@ -1,25 +1,55 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import NavBar from "./components/NavBar";
+import "./App.css";
+import axios from "axios";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import AppContainer from "./components/AppContainer";
+import AnimeInfo from "./components/AnimeInfo";
+import { AuthProvider } from "./context/animeContext";
 
-function App() {
+const API_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjI4MyIsIm5iZiI6MTYzMjQwNTA3NiwiZXhwIjoxNjM0OTk3MDc2LCJpYXQiOjE2MzI0MDUwNzZ9.bxLfYp7z49wSONTZfnPOHtuZ9S7He5dGFb_Wm5-fXj8";
+const App = () => {
+  const [anime, setAnime] = useState([]);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const fetchApi = async () => {
+      const result = await axios.get(
+        "https://api.aniapi.com/v1/anime?per_page=20&page=6",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `${API_KEY}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+
+      setAnime(result.data.data.documents);
+    };
+    fetchApi();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Router>
+        <AuthProvider>
+          <NavBar setSearch={setSearch} />
+          <Switch>
+            <Route exact name="animeInfo" path="/:id">
+              <AnimeInfo />
+            </Route>
+            <Route path="/" exact>
+              <AppContainer anime={anime} search={search} />
+            </Route>
+          </Switch>
+        </AuthProvider>
+      </Router>
     </div>
   );
-}
+};
 
 export default App;
